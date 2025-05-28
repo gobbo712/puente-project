@@ -27,11 +27,29 @@ export const fetchUserById = createAsyncThunk(
   }
 );
 
+// Toggle admin role for a user
+export const toggleAdminRole = createAsyncThunk(
+  'users/toggleAdminRole',
+  async (userId, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await userService.toggleAdminRole(userId);
+      // Refresh the user list after toggling role
+      dispatch(fetchAllUsers());
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
+
 const initialState = {
   users: [],
   selectedUser: null,
   isLoading: false,
   error: null,
+  toggleLoading: false,
+  toggleSuccess: false,
+  toggleMessage: null
 };
 
 const userSlice = createSlice({
@@ -44,6 +62,10 @@ const userSlice = createSlice({
     resetSelectedUser: (state) => {
       state.selectedUser = null;
     },
+    resetToggleStatus: (state) => {
+      state.toggleSuccess = false;
+      state.toggleMessage = null;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -73,9 +95,26 @@ const userSlice = createSlice({
       .addCase(fetchUserById.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      
+      // Toggle admin role cases
+      .addCase(toggleAdminRole.pending, (state) => {
+        state.toggleLoading = true;
+        state.toggleSuccess = false;
+        state.toggleMessage = null;
+      })
+      .addCase(toggleAdminRole.fulfilled, (state, action) => {
+        state.toggleLoading = false;
+        state.toggleSuccess = true;
+        state.toggleMessage = action.payload.message;
+      })
+      .addCase(toggleAdminRole.rejected, (state, action) => {
+        state.toggleLoading = false;
+        state.toggleSuccess = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { resetError, resetSelectedUser } = userSlice.actions;
+export const { resetError, resetSelectedUser, resetToggleStatus } = userSlice.actions;
 export default userSlice.reducer; 

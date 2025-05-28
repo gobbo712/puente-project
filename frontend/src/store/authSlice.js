@@ -50,6 +50,7 @@ export const refreshToken = createAsyncThunk(
       localStorage.setItem('token', response.token);
       localStorage.setItem('tokenExpiry', expiryTime.toString());
       localStorage.setItem('user', JSON.stringify(response));
+      localStorage.setItem('userId', response.id);
       
       return response;
     } catch (error) {
@@ -67,6 +68,9 @@ export const login = createAsyncThunk(
       
       // Store credentials for token refresh (securely)
       localStorage.setItem('credentials', JSON.stringify(credentials));
+      
+      // Store user ID for reference
+      localStorage.setItem('userId', response.id);
       
       // Set token expiry (24 hours from now instead of 5 minutes)
       const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000;
@@ -102,6 +106,7 @@ export const logout = createAsyncThunk(
     localStorage.removeItem('tokenExpiry');
     localStorage.removeItem('user');
     localStorage.removeItem('credentials');
+    localStorage.removeItem('userId');
     return null;
   }
 );

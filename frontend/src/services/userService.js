@@ -10,9 +10,15 @@ const getUserById = async (id) => {
   return response.data;
 };
 
+const toggleAdminRole = async (userId) => {
+  const response = await axiosInstance.put(`/users/${userId}/toggle-admin`);
+  return response.data;
+};
+
 const userService = {
   getAllUsers,
-  getUserById
+  getUserById,
+  toggleAdminRole
 };
 
 export default userService; 

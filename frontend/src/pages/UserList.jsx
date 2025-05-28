@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers } from '../store/userSlice';
+import { fetchAllUsers, toggleAdminRole, resetToggleStatus } from '../store/userSlice';
 import { Navigate } from 'react-router-dom';
 
 const UserList = () => {
   const dispatch = useDispatch();
-  const { users, isLoading, error } = useSelector((state) => state.users);
+  const { users, isLoading, error, toggleLoading, toggleSuccess, toggleMessage } = useSelector((state) => state.users);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const [actionInProgress, setActionInProgress] = useState(false);
   
   // Check if user is admin
   const isAdmin = user?.roles?.includes('ROLE_ADMIN');
@@ -17,6 +18,22 @@ const UserList = () => {
       dispatch(fetchAllUsers());
     }
   }, [dispatch, isAuthenticated, isAdmin]);
+  
+  // Reset toggle status after 3 seconds
+  useEffect(() => {
+    if (toggleSuccess) {
+      setActionInProgress(false);
+      const timer = setTimeout(() => {
+        dispatch(resetToggleStatus());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toggleSuccess, dispatch]);
+  
+  const handleToggleAdmin = (userId) => {
+    setActionInProgress(true);
+    dispatch(toggleAdminRole(userId));
+  };
   
   // If not authenticated, redirect to login
   if (!isAuthenticated) {
@@ -56,6 +73,12 @@ const UserList = () => {
     <div>
       <h1 className="text-2xl font-bold mb-6">User Management</h1>
       
+      {toggleSuccess && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          <p>{toggleMessage}</p>
+        </div>
+      )}
+      
       {users && users.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg overflow-hidden">
@@ -66,31 +89,53 @@ const UserList = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.username}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.firstName} {user.lastName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.roles?.map((role) => (
-                      <span 
-                        key={role} 
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          role.includes('ADMIN') ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                        } mr-2`}
+              {users.map((user) => {
+                // Check if user has admin role
+                const isUserAdmin = user.roles?.some(role => role.includes('ADMIN'));
+                // Prevent toggling your own admin status
+                const isSelf = user.id === parseInt(localStorage.getItem('userId'));
+                
+                return (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.username}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.firstName} {user.lastName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.roles?.map((role) => (
+                        <span 
+                          key={role} 
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            role.includes('ADMIN') ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          } mr-2`}
+                        >
+                          {role.replace('ROLE_', '')}
+                        </span>
+                      ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleToggleAdmin(user.id)}
+                        disabled={actionInProgress || toggleLoading || isSelf}
+                        className={`px-3 py-1 rounded text-sm ${
+                          isUserAdmin 
+                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200' 
+                            : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                        } ${(actionInProgress || toggleLoading || isSelf) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={isSelf ? "You cannot change your own admin status" : ""}
                       >
-                        {role.replace('ROLE_', '')}
-                      </span>
-                    ))}
-                  </td>
-                </tr>
-              ))}
+                        {isUserAdmin ? 'Remove Admin' : 'Make Admin'}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

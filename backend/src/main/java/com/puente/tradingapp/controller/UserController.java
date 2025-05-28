@@ -1,8 +1,11 @@
 package com.puente.tradingapp.controller;
 
+import com.puente.tradingapp.model.Role;
+import com.puente.tradingapp.model.Role.ERole;
 import com.puente.tradingapp.model.User;
 import com.puente.tradingapp.payload.response.MessageResponse;
 import com.puente.tradingapp.payload.response.UserResponse;
+import com.puente.tradingapp.repository.RoleRepository;
 import com.puente.tradingapp.repository.UserRepository;
 import com.puente.tradingapp.security.service.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,12 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,6 +30,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
 
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Get the current authenticated user's profile")
@@ -83,5 +88,43 @@ public class UserController {
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(users);
+    }
+    
+    @PutMapping("/{id}/toggle-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Toggle admin role", description = "Add or remove admin role from a user (admin only)")
+    public ResponseEntity<?> toggleAdminRole(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    // Find admin role
+                    Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                            .orElseThrow(() -> new RuntimeException("Error: Admin Role not found"));
+                    
+                    // Check if user already has admin role
+                    boolean isAdmin = user.getRoles().stream()
+                            .anyMatch(role -> role.getName() == ERole.ROLE_ADMIN);
+                    
+                    // Toggle admin role
+                    Set<Role> roles = new HashSet<>(user.getRoles());
+                    if (isAdmin) {
+                        // Make sure we don't remove the user role
+                        if (roles.size() > 1) {
+                            roles.remove(adminRole);
+                            user.setRoles(roles);
+                            userRepository.save(user);
+                            return ResponseEntity.ok(new MessageResponse("Admin role removed from user"));
+                        } else {
+                            return ResponseEntity.badRequest()
+                                    .body(new MessageResponse("User must have at least one role"));
+                        }
+                    } else {
+                        // Add admin role
+                        roles.add(adminRole);
+                        user.setRoles(roles);
+                        userRepository.save(user);
+                        return ResponseEntity.ok(new MessageResponse("Admin role added to user"));
+                    }
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
