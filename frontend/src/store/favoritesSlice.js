@@ -7,6 +7,7 @@ export const fetchFavorites = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await favoriteService.getFavorites();
+      console.log('API response for favorites:', response);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -91,10 +92,39 @@ const favoritesSlice = createSlice({
       })
       .addCase(removeFromFavorites.fulfilled, (state, action) => {
         state.isLoading = false;
-        // Filter out the favorite with the matching instrument ID
-        state.favorites = state.favorites.filter(
-          (favorite) => favorite.id !== action.payload
-        );
+        
+        console.log('Remove from favorites fulfilled with ID:', action.payload);
+        console.log('Current favorites before filtering:', state.favorites);
+        
+        // The backend returns InstrumentResponse objects with an id field
+        // Filter out the instrument with matching ID
+        state.favorites = state.favorites.filter(item => {
+          // The payload is the instrumentId we're removing
+          // For each favorite item, we need to compare the instrument id with the payload
+          
+          if (item.id && item.id === action.payload) {
+            // If the item has a direct id that matches
+            console.log('Removing item with id:', item.id);
+            return false;
+          }
+          
+          if (item.instrumentId && String(item.instrumentId) === String(action.payload)) {
+            // If the item has an instrumentId property
+            console.log('Removing item with instrumentId:', item.instrumentId);
+            return false;
+          }
+          
+          // For items with an instrument object that contains the id
+          if (item.instrument && item.instrument.id && 
+              String(item.instrument.id) === String(action.payload)) {
+            console.log('Removing item with instrument.id:', item.instrument.id);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        console.log('Favorites after filtering:', state.favorites);
       })
       .addCase(removeFromFavorites.rejected, (state, action) => {
         state.isLoading = false;

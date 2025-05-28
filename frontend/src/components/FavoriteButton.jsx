@@ -10,17 +10,35 @@ const FavoriteButton = ({ instrumentId }) => {
   
   // Check if this instrument is already in favorites
   useEffect(() => {
-    if (favorites.length > 0) {
-      const favorite = favorites.find(fav => fav.id === instrumentId);
+    console.log('FavoriteButton useEffect: checking favorites for', instrumentId);
+    console.log('Current favorites:', favorites);
+    
+    if (favorites && favorites.length > 0) {
+      // Find favorite by checking different possible data structures
+      const favorite = favorites.find(fav => {
+        const favId = fav.instrumentId || 
+                     (fav.instrument && fav.instrument.id) || 
+                     fav.instrument || 
+                     fav.id;
+        
+        // Compare as strings to avoid type mismatches
+        return String(favId) === String(instrumentId);
+      });
+      
       if (favorite) {
+        console.log('Found favorite:', favorite);
         setIsFavorite(true);
         setFavoriteId(favorite.id);
       } else {
+        console.log('No matching favorite found');
         setIsFavorite(false);
         setFavoriteId(null);
       }
+    } else {
+      setIsFavorite(false);
+      setFavoriteId(null);
     }
-  }, [favorites, instrumentId]);
+  }, [favorites, instrumentId]); // Dependencies ensure this runs when favorites change
   
   // Fetch favorites if not already loaded
   useEffect(() => {
@@ -32,10 +50,35 @@ const FavoriteButton = ({ instrumentId }) => {
   const toggleFavorite = () => {
     if (isLoading) return;
     
-    if (isFavorite) {
-      dispatch(removeFromFavorites(instrumentId));
+    // Immediately update the UI state
+    const newFavoriteState = !isFavorite;
+    setIsFavorite(newFavoriteState);
+    
+    // Then dispatch the async action
+    if (newFavoriteState) {
+      console.log('Adding to favorites:', instrumentId);
+      dispatch(addToFavorites(instrumentId))
+        .unwrap()
+        .then(response => {
+          console.log('Successfully added to favorites:', response);
+        })
+        .catch(error => {
+          console.error('Failed to add to favorites:', error);
+          // Revert UI state on error
+          setIsFavorite(false);
+        });
     } else {
-      dispatch(addToFavorites(instrumentId));
+      console.log('Removing from favorites:', instrumentId);
+      dispatch(removeFromFavorites(instrumentId))
+        .unwrap()
+        .then(() => {
+          console.log('Successfully removed from favorites');
+        })
+        .catch(error => {
+          console.error('Failed to remove from favorites:', error);
+          // Revert UI state on error
+          setIsFavorite(true);
+        });
     }
   };
   
