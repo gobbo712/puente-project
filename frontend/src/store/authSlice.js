@@ -4,7 +4,7 @@ import authService from '../services/authService';
 // Check if token exists and is not expired
 export const checkAuthStatus = createAsyncThunk(
   'auth/checkStatus',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -14,14 +14,44 @@ export const checkAuthStatus = createAsyncThunk(
       // Check token expiration
       const expiry = localStorage.getItem('tokenExpiry');
       if (expiry && new Date().getTime() > parseInt(expiry)) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('tokenExpiry');
-        localStorage.removeItem('user');
-        return rejectWithValue('Token expired');
+        // Try to refresh token
+        try {
+          await dispatch(refreshToken()).unwrap();
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          const newToken = localStorage.getItem('token');
+          return { token: newToken, user };
+        } catch (refreshError) {
+          // If refresh fails, log the user out
+          localStorage.removeItem('token');
+          localStorage.removeItem('tokenExpiry');
+          localStorage.removeItem('user');
+          localStorage.removeItem('credentials');
+          return rejectWithValue('Token expired and refresh failed');
+        }
       }
       
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       return { token, user };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Refresh token
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.refreshToken();
+      
+      // Update token expiration time
+      const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000; // 24 hours instead of 5 minutes
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('tokenExpiry', expiryTime.toString());
+      localStorage.setItem('user', JSON.stringify(response));
+      
+      return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -35,11 +65,14 @@ export const login = createAsyncThunk(
     try {
       const response = await authService.login(credentials);
       
-      // Set token expiry (5 minutes from now)
-      const expiryTime = new Date().getTime() + 5 * 60 * 1000;
+      // Store credentials for token refresh (securely)
+      localStorage.setItem('credentials', JSON.stringify(credentials));
+      
+      // Set token expiry (24 hours from now instead of 5 minutes)
+      const expiryTime = new Date().getTime() + 24 * 60 * 60 * 1000;
       localStorage.setItem('token', response.token);
       localStorage.setItem('tokenExpiry', expiryTime.toString());
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('user', JSON.stringify(response));
       
       return response;
     } catch (error) {
@@ -68,6 +101,7 @@ export const logout = createAsyncThunk(
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiry');
     localStorage.removeItem('user');
+    localStorage.removeItem('credentials');
     return null;
   }
 );
@@ -104,7 +138,7 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        state.user = action.payload;
         state.token = action.payload.token;
         state.sessionExpired = false;
       })
@@ -112,6 +146,25 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
         state.isAuthenticated = false;
+      })
+      
+      // Refresh token cases
+      .addCase(refreshToken.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+        state.token = action.payload.token;
+        state.sessionExpired = false;
+      })
+      .addCase(refreshToken.rejected, (state) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.sessionExpired = true;
       })
       
       // Register cases

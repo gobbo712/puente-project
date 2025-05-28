@@ -6,12 +6,19 @@ const FavoriteButton = ({ instrumentId }) => {
   const dispatch = useDispatch();
   const { favorites, isLoading } = useSelector((state) => state.favorites);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteId, setFavoriteId] = useState(null);
   
   // Check if this instrument is already in favorites
   useEffect(() => {
     if (favorites.length > 0) {
-      const found = favorites.some(fav => fav.instrumentId === instrumentId);
-      setIsFavorite(found);
+      const favorite = favorites.find(fav => fav.id === instrumentId);
+      if (favorite) {
+        setIsFavorite(true);
+        setFavoriteId(favorite.id);
+      } else {
+        setIsFavorite(false);
+        setFavoriteId(null);
+      }
     }
   }, [favorites, instrumentId]);
   
@@ -26,11 +33,7 @@ const FavoriteButton = ({ instrumentId }) => {
     if (isLoading) return;
     
     if (isFavorite) {
-      // Find the favorite object to get its ID
-      const favorite = favorites.find(fav => fav.instrumentId === instrumentId);
-      if (favorite) {
-        dispatch(removeFromFavorites(favorite.id));
-      }
+      dispatch(removeFromFavorites(instrumentId));
     } else {
       dispatch(addToFavorites(instrumentId));
     }

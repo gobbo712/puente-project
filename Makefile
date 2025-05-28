@@ -22,7 +22,7 @@ start-backend:
 stop:
 	@echo "Stopping services..."
 	@-pkill -f "node.*vite" || true
-	@-killall java || true
+	@-killall -9 java || true
 	@echo "Services stopped"
 
 # Clean both projects

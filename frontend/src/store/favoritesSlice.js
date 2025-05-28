@@ -91,6 +91,7 @@ const favoritesSlice = createSlice({
       })
       .addCase(removeFromFavorites.fulfilled, (state, action) => {
         state.isLoading = false;
+        // Filter out the favorite with the matching instrument ID
         state.favorites = state.favorites.filter(
           (favorite) => favorite.id !== action.payload
         );
