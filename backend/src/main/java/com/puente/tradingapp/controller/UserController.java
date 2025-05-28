@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -62,5 +63,25 @@ public class UserController {
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all users", description = "Get a list of all registered users (admin only)")
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userRepository.findAll().stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .firstName(user.getFirstName())
+                        .lastName(user.getLastName())
+                        .roles(user.getRoles().stream()
+                                .map(role -> role.getName().name())
+                                .collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(users);
     }
 }

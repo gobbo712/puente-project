@@ -1,4 +1,4 @@
-.PHONY: all start-frontend start-backend start stop clean build help
+.PHONY: all start-frontend start-backend start stop clean build help admin
 
 # Default target
 all: start
@@ -43,6 +43,16 @@ install:
 	@cd frontend && npm install
 	@cd backend && ./mvnw dependency:resolve
 
+# Promote a user to ADMIN role by email address
+admin:
+	@if [ -z "$(email)" ]; then \
+		echo "Error: Email address is required"; \
+		echo "Usage: make admin email=user@example.com"; \
+		exit 1; \
+	fi
+	@echo "Promoting user $(email) to ADMIN role..."
+	@cd backend/scripts && ./promote-admin.sh $(email)
+
 # Help
 help:
 	@echo "Puente Trading App - Makefile Help"
@@ -54,6 +64,7 @@ help:
 	@echo "  clean     - Clean both projects"
 	@echo "  build     - Build both projects"
 	@echo "  install   - Install dependencies for both projects"
+	@echo "  admin     - Promote a user to ADMIN role (usage: make admin email=user@example.com)"
 	@echo "  help      - Show this help message"
 	@echo ""
 	@echo "Individual service targets:"

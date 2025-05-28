@@ -1,4 +1,4 @@
-.PHONY: run clean build
+.PHONY: run clean build admin
 
 # Default target
 all: run
@@ -23,6 +23,17 @@ init:
 	@echo "Initializing Maven wrapper..."
 	@mvn -N io.takari:maven:wrapper
 
+# Promote user to admin role
+admin:
+	@if [ -z "$(email)" ]; then \
+		echo "Error: Email is required"; \
+		echo "Usage: make admin email=user@example.com"; \
+		exit 1; \
+	fi
+	@echo "Promoting user to admin role..."
+	@chmod +x scripts/promote-admin.sh
+	@scripts/promote-admin.sh $(email)
+
 # Help
 help:
 	@echo "Available targets:"
@@ -30,4 +41,5 @@ help:
 	@echo "  clean  - Clean the project"
 	@echo "  build  - Build the project"
 	@echo "  init   - Initialize Maven wrapper"
+	@echo "  admin  - Promote a user to admin role (usage: make admin email=user@example.com)"
 	@echo "  help   - Show this help message" 
