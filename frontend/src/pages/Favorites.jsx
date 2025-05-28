@@ -22,10 +22,6 @@ const Favorites = () => {
     }
   }, [dispatch, instruments.length, user]); // Added user dependency to refetch when user changes
   
-  // Debug logs
-  console.log('Favorites data:', favorites);
-  console.log('Instruments data:', instruments);
-  
   // Get favorite instruments by matching IDs
   const favoriteInstruments = instruments.filter(instrument => {
     if (!favorites || favorites.length === 0) return false;
@@ -33,15 +29,12 @@ const Favorites = () => {
     return favorites.some(favorite => {
       // Handle different potential data structures
       const favoriteId = favorite.instrumentId || favorite.instrument?.id || favorite.instrument || favorite.id;
-      console.log(`Comparing favorite ID: ${favoriteId} with instrument.id: ${instrument.id}`);
       
       // Try different types of comparison (string/number)
       return favoriteId == instrument.id || 
              String(favoriteId) === String(instrument.id);
     });
   });
-  
-  console.log('Filtered favorite instruments:', favoriteInstruments);
   
   const isLoading = favoritesLoading || instrumentsLoading;
   

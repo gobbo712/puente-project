@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToFavorites, removeFromFavorites, fetchFavorites } from '../store/favoritesSlice';
+import { addToFavorites, removeFromFavorites } from '../store/favoritesSlice';
 
 const FavoriteButton = ({ instrumentId }) => {
   const dispatch = useDispatch();
@@ -12,7 +12,6 @@ const FavoriteButton = ({ instrumentId }) => {
   // Check if this instrument is already in favorites
   useEffect(() => {
     console.log('FavoriteButton useEffect: checking favorites for', instrumentId);
-    console.log('Current favorites:', favorites);
     
     if (favorites && favorites.length > 0) {
       // Find favorite by checking different possible data structures
@@ -27,11 +26,9 @@ const FavoriteButton = ({ instrumentId }) => {
       });
       
       if (favorite) {
-        console.log('Found favorite:', favorite);
         setIsFavorite(true);
         setFavoriteId(favorite.id);
       } else {
-        console.log('No matching favorite found');
         setIsFavorite(false);
         setFavoriteId(null);
       }
@@ -40,14 +37,6 @@ const FavoriteButton = ({ instrumentId }) => {
       setFavoriteId(null);
     }
   }, [favorites, instrumentId]); // Dependencies ensure this runs when favorites change
-  
-  // Fetch favorites if not already loaded, or when user changes
-  useEffect(() => {
-    // Only fetch if we have a valid user
-    if (user && user.id) {
-      dispatch(fetchFavorites());
-    }
-  }, [dispatch, user]); // Added user dependency to refetch when user changes
   
   const toggleFavorite = () => {
     if (isLoading) return;

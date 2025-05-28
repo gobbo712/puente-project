@@ -60,6 +60,47 @@ A full-stack trading application with real-time market data, user authentication
 - Frontend environment variables can be set in `.env` files
 - Backend environment variables are in `backend/backend.env`
 
+## Docker Deployment
+
+The Puente Trading App can be run in Docker containers using Docker Compose:
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your system
+
+### Running with Docker
+
+1. Build the Docker images:
+
+   ```
+   make docker-build
+   ```
+
+2. Start the services:
+
+   ```
+   make docker-start
+   ```
+
+3. Access the application at http://localhost
+
+4. Promote a user to admin (after registering the user):
+
+   ```
+   make docker-admin email=user@example.com
+   ```
+
+5. Stop the services:
+
+   ```
+   make docker-stop
+   ```
+
+6. To clean up all Docker resources including volumes:
+   ```
+   make docker-clean
+   ```
+
 ## License
 
 [Your License Here]
