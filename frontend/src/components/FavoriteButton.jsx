@@ -5,6 +5,7 @@ import { addToFavorites, removeFromFavorites, fetchFavorites } from '../store/fa
 const FavoriteButton = ({ instrumentId }) => {
   const dispatch = useDispatch();
   const { favorites, isLoading } = useSelector((state) => state.favorites);
+  const { user } = useSelector((state) => state.auth);
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteId, setFavoriteId] = useState(null);
   
@@ -40,12 +41,13 @@ const FavoriteButton = ({ instrumentId }) => {
     }
   }, [favorites, instrumentId]); // Dependencies ensure this runs when favorites change
   
-  // Fetch favorites if not already loaded
+  // Fetch favorites if not already loaded, or when user changes
   useEffect(() => {
-    if (favorites.length === 0) {
+    // Only fetch if we have a valid user
+    if (user && user.id) {
       dispatch(fetchFavorites());
     }
-  }, [dispatch, favorites.length]);
+  }, [dispatch, user]); // Added user dependency to refetch when user changes
   
   const toggleFavorite = () => {
     if (isLoading) return;

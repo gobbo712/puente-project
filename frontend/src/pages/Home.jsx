@@ -2,19 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchInstruments } from '../store/marketSlice';
+import { fetchFavorites } from '../store/favoritesSlice';
 import InstrumentCard from '../components/InstrumentCard';
 
 const Home = () => {
   const dispatch = useDispatch();
   const { instruments, isLoading, error } = useSelector((state) => state.market);
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [filter, setFilter] = useState('ALL');
   
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchInstruments());
+      
+      // Fetch favorites for the current user
+      if (user && user.id) {
+        dispatch(fetchFavorites());
+      }
     }
-  }, [dispatch, isAuthenticated]);
+  }, [dispatch, isAuthenticated, user]);
   
   // Filter instruments based on type
   const filteredInstruments = filter === 'ALL' 

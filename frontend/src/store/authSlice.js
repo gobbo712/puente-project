@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../services/authService';
+import { resetFavorites } from './favoritesSlice';
 
 // Check if token exists and is not expired
 export const checkAuthStatus = createAsyncThunk(
@@ -62,8 +63,11 @@ export const refreshToken = createAsyncThunk(
 // Login user
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, dispatch }) => {
     try {
+      // Reset favorites state when logging in
+      dispatch(resetFavorites());
+      
       const response = await authService.login(credentials);
       
       // Store credentials for token refresh (securely)
@@ -101,7 +105,10 @@ export const register = createAsyncThunk(
 // Logout user
 export const logout = createAsyncThunk(
   'auth/logout',
-  async () => {
+  async (_, { dispatch }) => {
+    // Reset favorites state when logging out
+    dispatch(resetFavorites());
+    
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpiry');
     localStorage.removeItem('user');

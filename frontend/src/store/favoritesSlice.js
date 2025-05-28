@@ -54,6 +54,11 @@ const favoritesSlice = createSlice({
     resetError: (state) => {
       state.error = null;
     },
+    resetFavorites: (state) => {
+      state.favorites = [];
+      state.isLoading = false;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -133,5 +138,5 @@ const favoritesSlice = createSlice({
   },
 });
 
-export const { resetError } = favoritesSlice.actions;
+export const { resetError, resetFavorites } = favoritesSlice.actions;
 export default favoritesSlice.reducer; 

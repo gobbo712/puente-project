@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInstrumentBySymbol, resetCurrentInstrument } from '../store/marketSlice';
+import { fetchFavorites } from '../store/favoritesSlice';
 import FavoriteButton from '../components/FavoriteButton';
 
 const InstrumentDetail = () => {
@@ -9,16 +10,22 @@ const InstrumentDetail = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentInstrument, isLoading, error } = useSelector((state) => state.market);
+  const { user } = useSelector((state) => state.auth);
   
   useEffect(() => {
     // Fetch instrument data
     dispatch(fetchInstrumentBySymbol(symbol));
     
+    // Make sure favorites are fetched for the current user
+    if (user && user.id) {
+      dispatch(fetchFavorites());
+    }
+    
     // Cleanup on unmount
     return () => {
       dispatch(resetCurrentInstrument());
     };
-  }, [dispatch, symbol]);
+  }, [dispatch, symbol, user]);
   
   const handleBack = () => {
     navigate(-1);

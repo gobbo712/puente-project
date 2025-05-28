@@ -8,15 +8,19 @@ const Favorites = () => {
   const dispatch = useDispatch();
   const { favorites, isLoading: favoritesLoading, error: favoritesError } = useSelector((state) => state.favorites);
   const { instruments, isLoading: instrumentsLoading } = useSelector((state) => state.market);
+  const { user } = useSelector((state) => state.auth);
   
   useEffect(() => {
-    dispatch(fetchFavorites());
+    // Only fetch favorites if we have a valid user
+    if (user && user.id) {
+      dispatch(fetchFavorites());
+    }
     
     // Also fetch all instruments if not already loaded
     if (instruments.length === 0) {
       dispatch(fetchInstruments());
     }
-  }, [dispatch, instruments.length]);
+  }, [dispatch, instruments.length, user]); // Added user dependency to refetch when user changes
   
   // Debug logs
   console.log('Favorites data:', favorites);
