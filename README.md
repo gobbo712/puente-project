@@ -44,6 +44,7 @@ A full-stack trading application with real-time market data, user authentication
 - `make start` - Start both frontend and backend services
 - `make start-frontend` - Start only the frontend
 - `make start-backend` - Start only the backend
+- `make stop` - Stop all running services
 - `make clean` - Clean both projects
 - `make build` - Build both projects
 - `make install` - Install dependencies for both projects
