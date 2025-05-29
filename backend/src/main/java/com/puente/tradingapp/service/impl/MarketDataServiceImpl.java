@@ -1,11 +1,16 @@
 package com.puente.tradingapp.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.puente.tradingapp.model.Instrument;
-import com.puente.tradingapp.model.Instrument.InstrumentType;
-import com.puente.tradingapp.repository.InstrumentRepository;
-import com.puente.tradingapp.service.MarketDataService;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
@@ -19,16 +24,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.puente.tradingapp.model.Instrument;
+import com.puente.tradingapp.model.Instrument.InstrumentType;
+import com.puente.tradingapp.repository.InstrumentRepository;
+import com.puente.tradingapp.service.MarketDataService;
 
 @Service
 public class MarketDataServiceImpl implements MarketDataService {

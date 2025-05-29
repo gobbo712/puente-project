@@ -1,13 +1,14 @@
 package com.puente.tradingapp.config;
 
-import com.puente.tradingapp.model.Role;
-import com.puente.tradingapp.model.Role.ERole;
-import com.puente.tradingapp.repository.RoleRepository;
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import com.puente.tradingapp.model.Role;
+import com.puente.tradingapp.model.Role.ERole;
+import com.puente.tradingapp.repository.RoleRepository;
 
 @Component
 public class DatabaseInitializer implements CommandLineRunner {

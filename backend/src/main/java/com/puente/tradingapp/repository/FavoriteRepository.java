@@ -1,12 +1,12 @@
 package com.puente.tradingapp.repository;
 
-import com.puente.tradingapp.model.Favorite;
-import com.puente.tradingapp.model.User;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.puente.tradingapp.model.Favorite;
 
 @Repository
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {

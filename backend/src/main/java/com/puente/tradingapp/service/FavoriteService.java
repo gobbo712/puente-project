@@ -1,8 +1,8 @@
 package com.puente.tradingapp.service;
 
-import com.puente.tradingapp.model.Favorite;
-
 import java.util.List;
+
+import com.puente.tradingapp.model.Favorite;
 
 public interface FavoriteService {
     List<Favorite> getUserFavorites(Long userId);

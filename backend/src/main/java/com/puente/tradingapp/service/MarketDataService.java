@@ -1,9 +1,9 @@
 package com.puente.tradingapp.service;
 
-import com.puente.tradingapp.model.Instrument;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.puente.tradingapp.model.Instrument;
 
 public interface MarketDataService {
     List<Instrument> getAllInstruments();

@@ -1,5 +1,12 @@
 package com.puente.tradingapp.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.puente.tradingapp.model.Favorite;
 import com.puente.tradingapp.model.Instrument;
 import com.puente.tradingapp.model.User;
@@ -7,13 +14,8 @@ import com.puente.tradingapp.repository.FavoriteRepository;
 import com.puente.tradingapp.repository.InstrumentRepository;
 import com.puente.tradingapp.repository.UserRepository;
 import com.puente.tradingapp.service.FavoriteService;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class FavoriteServiceImpl implements FavoriteService {
