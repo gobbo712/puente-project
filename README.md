@@ -57,8 +57,57 @@ A full-stack trading application with real-time market data, user authentication
 
 ## Environment Configuration
 
-- Frontend environment variables can be set in `.env` files
-- Backend environment variables are in `backend/backend.env`
+Both frontend and backend services use environment files for configuration:
+
+### Backend Configuration
+
+Backend environment variables are configured in `backend/backend.env`:
+
+```
+# Sample backend.env file
+# Database Configuration
+export POSTGRES_URL=jdbc:postgresql://localhost:5432/tradingapp
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=postgres
+
+# JWT Configuration
+export JWT_SECRET=puente-trading-app-jwt-secret-key-must-be-at-least-256-bits-long
+
+# CORS Configuration
+export ALLOWED_ORIGINS=http://localhost:3000
+
+# Market Data Configuration
+export ALPHAVANTAGE_API_KEY=your_api_key_here
+
+# Instruments to track
+export STOCK_SYMBOLS=AAPL,MSFT,GOOGL,AMZN,TSLA,META,NVDA,JPM,V,WMT
+export CRYPTO_SYMBOLS=BTC,ETH,BNB,XRP,ADA,SOL,DOGE,DOT,AVAX,MATIC
+```
+
+### Frontend Configuration
+
+Frontend environment variables are configured in `frontend/frontend.env`:
+
+```
+# Sample frontend.env file
+# API Configuration
+export VITE_API_URL=http://localhost:8080/api
+
+# Authentication Configuration
+export VITE_TOKEN_STORAGE_KEY=token
+export VITE_USER_STORAGE_KEY=user
+export VITE_CREDENTIALS_STORAGE_KEY=credentials
+
+# Application Configuration
+export VITE_APP_NAME="Puente Trading App"
+export VITE_APP_VERSION="1.0.0"
+
+# Feature Flags
+export VITE_ENABLE_DEBUG_MODE=false
+export VITE_ENABLE_DEMO_MODE=false
+```
+
+**Note:** Both `.env` files are excluded from version control for security reasons. Make sure to create these files locally based on the examples above.
 
 ## Docker Deployment
 

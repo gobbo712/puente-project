@@ -11,7 +11,7 @@ start:
 # Start frontend service
 start-frontend:
 	@echo "Starting frontend service..."
-	@cd frontend && npm run dev
+	@cd frontend && source frontend.env && npm run dev
 
 # Start backend service
 start-backend:

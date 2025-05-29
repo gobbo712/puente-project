@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = '/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+const TOKEN_KEY = import.meta.env.VITE_TOKEN_STORAGE_KEY || 'token';
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
@@ -12,7 +13,7 @@ const axiosInstance = axios.create({
 // Request interceptor for adding the auth token
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -74,7 +75,8 @@ axiosInstance.interceptors.response.use(
         const auth = store.getState().auth;
         
         // Try to refresh the token
-        const storedCredentials = localStorage.getItem('credentials');
+        const CREDENTIALS_KEY = import.meta.env.VITE_CREDENTIALS_STORAGE_KEY || 'credentials';
+        const storedCredentials = localStorage.getItem(CREDENTIALS_KEY);
         if (!storedCredentials) {
           throw new Error('No stored credentials found');
         }
@@ -96,10 +98,10 @@ axiosInstance.interceptors.response.use(
         processQueue(refreshError, null);
         
         // Logout the user by clearing localStorage
-        localStorage.removeItem('token');
+        localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem('tokenExpiry');
-        localStorage.removeItem('user');
-        localStorage.removeItem('credentials');
+        localStorage.removeItem(import.meta.env.VITE_USER_STORAGE_KEY || 'user');
+        localStorage.removeItem(import.meta.env.VITE_CREDENTIALS_STORAGE_KEY || 'credentials');
         
         // Redirect to login if not already there
         if (!window.location.pathname.includes('/login')) {
